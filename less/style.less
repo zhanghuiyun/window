@@ -1,0 +1,162 @@
+@height : 40px;
+@operateIconHeight : 26px;
+@backgroundColor : rgba(255,255,255,0.5);
+@boxSizing : border-box;
+.operate(){
+	width: 30px;
+	height: @operateIconHeight;
+	cursor: pointer;
+}
+
+/*窗口信息*/
+#windowDetail{
+	width: 1000px;
+	margin: 0 auto;
+}
+#windowDetail li{
+	list-style-type: none;
+	margin-top: 10px;
+}
+#windowDetail label{
+	display: inline-block;
+	width: 200px;
+	font-weight: bold;
+}
+#windowDetail input{
+	display: inline-block;
+	width: 30px;
+	border:1px solid #ccc;
+}
+#windowDetail .btn{
+	display: inline-block;
+	width: 150px;
+	border-radius: 3px;
+	background-color: rgba(146,155,210,1);
+	height: 30px;
+	font-weight: bold;
+}
+
+/*窗口*/
+#windowMaxMove{
+	width: 1000px;
+	height: 450px;
+	border:1px solid #ccc;
+	margin: 0 auto;
+	position: relative;
+	box-sizing : @boxSizing;
+}
+.windowWrapper{
+	width: 300px;
+	height: 200px;
+	border : 1px solid #ccc;
+	border-radius: 5px;
+	position: absolute;
+	box-sizing : @boxSizing;
+	left: 100px;
+	top: 100px;
+}
+.window-container{
+	width: 100%;
+	height:  100%;
+	position: relative;
+}
+
+/*窗口头部*/
+.window-header{
+	width: 100%;
+	height: @height;
+	background-color: #7070DA;
+	padding: 0 10px;
+	box-sizing : @boxSizing;
+	position: absolute;
+	z-index: 10;
+}
+.cursor{
+	cursor: default;
+}
+.title{
+	height: @height;
+	display: inline-block;
+	float: left;
+	font-weight: bold;
+	line-height: @height;
+}
+.window-header ul{
+	width: 90px;
+	height: @height;
+	display: inline-block;
+	float: right;
+	margin: 0 0 0;
+	padding-left: 0;
+}
+.window-header ul li{
+	list-style-type: none;
+	width: 30px;
+	height: @operateIconHeight;
+	display: inline-block;
+	float: left;
+	margin-top: 7px;
+}
+
+/*窗口头部*/
+.maximize{
+	.operate();
+	background:url(../images/2.png) center center no-repeat;
+	&:hover{
+		background-color: @backgroundColor;
+	}
+}
+.close{
+	.operate();
+	background:url(../images/1.png) center center no-repeat;
+	&:hover{
+		background-color: @backgroundColor;
+	}
+}
+.collapse{
+	.operate();
+	background:url(../images/3.png) center center no-repeat;
+	&:hover{
+		background-color: @backgroundColor;
+	}
+}
+
+/*窗口头部操作样式切换*/
+.togglg-collapse{
+	.operate();
+	background:url(../images/4.png) center center no-repeat;
+	&:hover{
+		background-color: @backgroundColor;
+	}
+}
+.togglg-maximize{
+	.operate();
+	background:url(../images/5.png) center center no-repeat;
+	&:hover{
+		background-color: @backgroundColor;
+	}
+}
+
+/*窗口内容部分*/
+.window-content{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	background-color: #EAEAF1;
+	box-sizing : @boxSizing;
+	padding: 40px 10px 0 10px;
+	z-index: 5;
+}
+
+/*窗口页脚*/
+.window-footer{
+	position: absolute;
+	width: 100%;
+	height: @height;
+	background-color: #7070DA;
+	padding: 0 10px;
+	box-sizing : @boxSizing;
+	z-index: 10;
+	bottom: 0;
+}
+
