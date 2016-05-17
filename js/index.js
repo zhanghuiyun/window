@@ -418,13 +418,353 @@ Windows.prototype = {
 		}
 	},
 
+	//设置拖拽时鼠标样式
+	_setDragCursor : function(){ 
+		var _self = this,
+		    _options = this.options;
+
+		//设置拖拽状态下时间绑定
+		Util.event.addHandler(this.windowObj,'mousemove',dragCursor); 
+
+		function dragCursor(event){
+			//拖拽下禁止
+			if(_self.isDrag) {return ;}
+
+			//移动下禁止  
+			if(_self.isMove) {return ;} 
+
+			//最大时阻止窗口移动 
+			if (_self.isMaximize) {return;}   
+
+			e = Util.event.getEvent(event);
+
+			//鼠标位置
+			var mouseMovePosition ={
+				x : e.clientX,
+				y : e.clientY
+			} 
+
+			//窗口相对于视口的大小位置
+			var windowObjOptions = Util.getBoundingClientRect(_self.windowObj);
+
+			_self.windowHeader.style.cursor = "";
+			
+			//鼠标样式判断
+			if (mouseMovePosition.x < windowObjOptions.left + _options.dragRange) {    
+				_self.direction = "w-resize";            				                 	//W
+				if (mouseMovePosition.y < windowObjOptions.top + _options.dragRange) {
+					_self.direction = "nw-resize";      			 	 				 	//NW
+				}
+				if (mouseMovePosition.y > windowObjOptions.bottom - _options.dragRange) {   
+					_self.direction = "sw-resize";		  									//SW
+				}
+			}else if(mouseMovePosition.x > windowObjOptions.right - _options.dragRange){
+				_self.direction = "e-resize";            									//E
+				if (mouseMovePosition.y < windowObjOptions.top + _options.dragRange) {
+					_self.direction = "ne-resize";       									//NE
+				}
+				if (mouseMovePosition.y > windowObjOptions.bottom - _options.dragRange) {
+					_self.direction = "se-resize";       									//SE
+				}
+			}else if(mouseMovePosition.y < windowObjOptions.top + _options.dragRange){
+				_self.direction = "n-resize";           	 								//N
+			}else if(mouseMovePosition.y > windowObjOptions.bottom - _options.dragRange){
+				_self.direction = "s-resize";            									//S
+			}else{
+				_self.direction = "default";
+				_self.windowHeader.style.cursor = !_options.isMoveable ? 
+												  (!_options.isMaximize ? "default" : "pointer") : "move";
+			}
+
+			_self.windowObj.style.cursor = _self.direction;
+		}
+	},
+
+	//窗口拖拽放大缩小
+	windowDrag : function(event){
+		var _self = this,
+			_options = this.options,
+			mouseDownPosition,  //鼠标按下位置
+			windowPosition,     //窗口位置
+		    windowSize,         //窗口大小
+		    parentSize,		    //窗口父节点大小
+		    windowMaxSize,      //最大窗口
+		    windowMinSize;      //最小窗口
+
+		var width,              //窗口width
+			height,			    //窗口height		
+			top,				//窗口top
+			left;				//窗口left
+
+		//窗口是否可拖拽
+		if(!_options.isDragable){return}
+
+		//设置拖拽时鼠标样式
+		this._setDragCursor();
+
+		//鼠标按下时事件绑定
+		Util.event.addHandler(this.windowObj,'mousedown',dragWindow);    
+
+		function dragWindow(event){
+			e = Util.event.getEvent(event);
+
+			//如果不是在拖动范围内阻止拖动
+			if(_self.direction === "default"){return;}	
+
+			//窗口最大时阻止窗口拖动   
+			if (_self.isMaximize) {return;}              
+
+			//清除文本选中
+			Util.removeTextSelect();   
+
+			//鼠标位置
+			mouseDownPosition ={   
+				x : e.clientX,
+				y : e.clientY
+			} 
+
+			//鼠标按下窗口位置
+			windowPosition = {      
+				left : _options.left,
+				top : _options.top
+			}
+
+			//鼠标按下窗口大小
+			windowSize = {          
+				width : _options.width,
+				height : _options.height
+			}
+
+			//窗口父元素大小
+			parentSize = {         
+				width : _options.parent.clientWidth,
+				height : _options.parent.clientHeight
+			}
+
+			//窗口最大宽高
+			windowMaxSize = {     
+				maxWidth : _options.maxWidth,
+				maxHeight : _options.maxHeight
+			}
+
+			//窗口最小宽高
+			windowMinSize = {    
+				minWidth : _options.minWidth,
+				minHeight : _options.minHeight
+			}
+
+			//放大缩小事件绑定
+			Util.event.addHandler(document,'mousemove',dragBegin); 
+
+			//事件绑定解除
+			Util.event.addHandler(document,'mouseup',dragStop);   
+		}
+
+		function dragBegin(event){
+			//移动状态下禁止拖拽
+			if (_self.isMove) {return;}  
+
+			_self.isDrag = true;
+
+			e = Util.event.getEvent(event);
+
+			//清空文本选中
+			Util.removeTextSelect();  
+
+			//鼠标位置
+			var mouseMovePosition ={   
+				x : e.clientX,
+				y : e.clientY
+			} 
+
+			//窗口在拖拽时默认值
+			width = windowSize.width,      
+			height = windowSize.height,
+			top = windowPosition.top,
+			left = windowPosition.left;
+
+			//鼠标位置变化量
+			var offsetX = mouseMovePosition.x - mouseDownPosition.x ;
+			var offsetY = mouseMovePosition.y - mouseDownPosition.y ;
+
+			//拖拽时大小位置变化
+			switch(_self.direction){
+				case "e-resize" : 
+					width = offsetX + windowSize.width;
+					break;
+				case "w-resize" : 
+					width = windowSize.width - offsetX;  
+					left = windowPosition.left + offsetX;
+					break;
+				case "s-resize" : 
+					height = offsetY + windowSize.height;
+					break;
+				case "n-resize" : 
+					height = windowSize.height - offsetY;
+					top = windowPosition.top + offsetY;
+					break;
+				case "nw-resize" : 
+					height = windowSize.height - offsetY;
+					top = windowPosition.top + offsetY;
+					width = windowSize.width - offsetX;  
+					left = windowPosition.left + offsetX;
+					break;
+				case "ne-resize" :
+					height = windowSize.height - offsetY;
+					top = windowPosition.top + offsetY;
+					width = offsetX + windowSize.width;
+					break;
+				case "se-resize" : 
+					height = offsetY + windowSize.height;
+					width = offsetX + windowSize.width;
+					break;
+				case "sw-resize" : 
+					height = offsetY + windowSize.height;
+					width = windowSize.width - offsetX;  
+					left = windowPosition.left + offsetX;
+					break;
+				default :
+					return false;
+			}
+
+			//拖拽时边界值判断
+			var positionLimit = {
+				//top边缘判断
+				top : function (){   
+					if (top <= 0){
+						top = 0;
+						height = windowSize.height + windowPosition.top;
+					}
+				},
+
+				//left边缘判断
+				left : function(){  
+					if (left <= 0) {
+						left = 0;
+						width = windowSize.width + windowPosition.left;
+					}
+				},
+
+				//左边界判断
+				right : function(){
+					if (windowPosition.left + windowSize.width + offsetX >= parentSize.width) {
+						width = parentSize.width - windowPosition.left;
+						left = windowPosition.left; 
+					}
+				},
+
+				//下边界判断
+				bottom : function(){
+					if (windowPosition.top + windowSize.height + offsetY >= parentSize.height) {
+						height = parentSize.height - windowPosition.top;
+						top = windowPosition.top; 
+					}
+				},
+
+				//宽度最大最小时判断
+				widthLimit : function(){   
+					if (width <= windowMinSize.minWidth) {
+						left = windowSize.width - windowMinSize.minWidth + windowPosition.left ; 
+					}else if(width >= windowMaxSize.maxWidth){
+						left = windowPosition.left - (windowMaxSize.maxWidth - windowSize.width);
+					}
+				},
+
+				//高度最大最小时判断
+				heightLimit : function(){       
+					if (height <= windowMinSize.minHeight) {
+						top = windowSize.height - windowMinSize.minHeight + windowPosition.top ; 
+					}else if (height >= windowMaxSize.maxHeight) {
+						top = windowPosition.top - (windowMaxSize.maxHeight - windowSize.height);
+					}
+				}
+			}
+
+			//边界值判断
+			switch(_self.direction){
+				case "e-resize" : 
+					positionLimit.right();
+					break;
+				case "w-resize": 
+					positionLimit.left();
+					positionLimit.widthLimit();
+					break;
+				case "s-resize": 
+					positionLimit.bottom();
+					break;
+				case "n-resize": 
+					positionLimit.top();
+					positionLimit.heightLimit();
+					break;
+				case "nw-resize" : 
+					positionLimit.top();
+					positionLimit.left();
+					positionLimit.heightLimit();
+					positionLimit.widthLimit();
+					break;
+				case "ne-resize" :
+					positionLimit.top();
+					positionLimit.heightLimit();
+					positionLimit.right();
+					break;
+				case "se-resize" : 
+					positionLimit.bottom();
+					positionLimit.right();
+					break;
+				case "sw-resize" : 
+					positionLimit.bottom();
+					positionLimit.left();
+					positionLimit.widthLimit();
+					break;
+				default :
+					return false;
+			}
+
+			//窗体宽度最大最小限制
+			if (width <= windowMinSize.minWidth) {
+				width = windowMinSize.minWidth;
+			}else if(width >= windowMaxSize.maxWidth){
+				width = windowMaxSize.maxWidth;
+			}
+
+			//窗体高度最大最小限制
+			if (height <= windowMinSize.minHeight) {
+				height = windowMinSize.minHeight;
+			}else if (height >= windowMaxSize.maxHeight) {
+				height = windowMaxSize.maxHeight;
+			}
+
+			_self.resizeTo(width,height);
+			_self.moveTo(left,top);
+		}
+
+		function dragStop(){
+			_self.isDrag = false;
+			Util.event.removeHandler(document,'mousemove',dragBegin);
+			Util.event.removeHandler(document,'mouseup',dragStop);
+		}
+	},
+
 	//初始化
 	init : function(){
 		//创建窗口
 		this._createWindow();
 
+		//窗口操作
+		this._windowOperate();
+
+		//窗口拖拽
+		this.windowDrag();
+
 		//窗口拖动
 	    this.windowMove();
+
+		//窗口显示掩藏
+		this.show();
+
+		//窗口是否含有页脚
+		this.footerExit();
+
 	}
 }
 
