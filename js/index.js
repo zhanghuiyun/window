@@ -154,6 +154,29 @@ Windows.prototype = {
 		this._windowStatus();  
 	},
 
+	//窗口状态
+	_windowStatus : function (){
+		var _options = this.options;
+
+		this.moveTo(_options.left, _options.top);
+
+		this.resizeTo(_options.width, _options.height);
+
+		//是否可以折叠
+		if (!_options.isCollapse) {
+			this.collapse.style.cursor = "not-allowed";
+		};
+
+		//是否可以放大
+		if (!_options.isMaximize) {
+			this.maximize.style.cursor = "not-allowed";
+		};
+
+		//头部鼠标样式设置
+		this.windowHeader.style.cursor = !_options.isMoveable ? 
+												  (!_options.isMaximize ? "default" : "pointer") : "move";
+	},
+
 	//窗口位置
 	moveTo : function(left,top){
 		var _options = this.options;
@@ -180,107 +203,6 @@ Windows.prototype = {
 		//height
 		style.height = height + "px";
 		_options.height = height;
-	},
-
-	//窗口拖动
-	windowMove : function(){
-		var _options = this.options,
-		    _self = this,
-		    mouseDownPosition,  //鼠标按下位置
-		    windowPosition,  //窗口位置
-		    windowSize,      //窗口大小
-		    parentSize;		 //窗口父节点大小
-
-		//窗口是否可以移动
-		if (!_options.isMoveable) {return;}
-
-		//鼠标按下
-		Util.event.addHandler(this.windowHeader,'mousedown',draggable);
-
-		//鼠标按下事件
-		function draggable(e){
-			//拖动与拖拽冲突解决
-			if (_self.direction !== "default") {return;}
-
-			e = Util.event.getEvent(event);
-			var target = Util.event.getTarget(e);
-
-			//阻止文本选中事件
-			Util.removeTextSelect();
-
-			//最大时阻止窗口移动
-			if (_self.isMaximize) {return;} 
-
-			//窗口按下位置
-			windowPosition = {      
-				left : _options.left,
-				top : _options.top
-			}
-
-			//窗口按下时的大小
-			windowSize = {          
-				width : _options.width,
-				height : _options.height
-			}
-
-			//窗口父元素大小
-			parentSize = {         
-				width : _options.parent.clientWidth,
-				height : _options.parent.clientHeight
-			}
-
-			//鼠标按下位置
-			mouseDownPosition = Util.event.getPageAxis(e);
-
-			//拖动范围设置
-			if (target !== _self.collapse && target !== _self.maximize && target !== _self.close ) {
-				Util.event.addHandler(document,'mousemove',draggableBegin);
-				Util.event.addHandler(document,'mouseup',draggableStop);
-			}
-		}
-
-		//窗口拖动事件
-		function draggableBegin(e){
-			//大小拖拽状态下禁止
-			if (_self.isDrag) {return;} 
-
-			_self.isMove = true;
-
-			e = Util.event.getEvent(event);
-
-			//文本选中触发的事件
-			Util.removeTextSelect();   
-
-			//鼠标移动位置
-			var mouseMovePosition = Util.event.getPageAxis(e);
-
-			//鼠标移动偏移量
-			var offsetX = mouseMovePosition.x - mouseDownPosition.x;
-			var offsetY = mouseMovePosition.y - mouseDownPosition.y;
-
-			//窗口left ，top
-			var left = offsetX + windowPosition.left;
-			var top = offsetY + windowPosition.top;
-
-			//窗口在左边界的判断
-			left = (left < 0) ? 0 : left;   
-			//窗口右边界判断
-			top = (top < 0) ? 0 : top;
-			//窗口右边界判断
-			left = (left > parentSize.width - windowSize.width) ? parentSize.width - windowSize.width : left;
-			//窗口下边界判断
-			top = (top > parentSize.height - windowSize.height) ? parentSize.height - windowSize.height : top;
-
-			//移动窗口
-			_self.moveTo(left,top);
-		}
-
-		//拖动事件解绑
-		function draggableStop(){
-			_self.isMove = false;
-			Util.event.removeHandler(document,'mousemove',draggableBegin);
-			Util.event.removeHandler(document,'mouseup',draggableStop);
-		}
 	},
 
 	//窗口操作
@@ -456,6 +378,107 @@ Windows.prototype = {
 	footerExit : function(){
 		if(!this.options.hasFooter){
 			this.windowContainer.removeChild(this.footer);
+		}
+	},
+
+	//窗口拖动
+	windowMove : function(){
+		var _options = this.options,
+		    _self = this,
+		    mouseDownPosition,  //鼠标按下位置
+		    windowPosition,  //窗口位置
+		    windowSize,      //窗口大小
+		    parentSize;		 //窗口父节点大小
+
+		//窗口是否可以移动
+		if (!_options.isMoveable) {return;}
+
+		//鼠标按下
+		Util.event.addHandler(this.windowHeader,'mousedown',draggable);
+
+		//鼠标按下事件
+		function draggable(e){
+			//拖动与拖拽冲突解决
+			if (_self.direction !== "default") {return;}
+
+			e = Util.event.getEvent(event);
+			var target = Util.event.getTarget(e);
+
+			//阻止文本选中事件
+			Util.removeTextSelect();
+
+			//最大时阻止窗口移动
+			if (_self.isMaximize) {return;} 
+
+			//窗口按下位置
+			windowPosition = {      
+				left : _options.left,
+				top : _options.top
+			}
+
+			//窗口按下时的大小
+			windowSize = {          
+				width : _options.width,
+				height : _options.height
+			}
+
+			//窗口父元素大小
+			parentSize = {         
+				width : _options.parent.clientWidth,
+				height : _options.parent.clientHeight
+			}
+
+			//鼠标按下位置
+			mouseDownPosition = Util.event.getPageAxis(e);
+
+			//拖动范围设置
+			if (target !== _self.collapse && target !== _self.maximize && target !== _self.close ) {
+				Util.event.addHandler(document,'mousemove',draggableBegin);
+				Util.event.addHandler(document,'mouseup',draggableStop);
+			}
+		}
+
+		//窗口拖动事件
+		function draggableBegin(e){
+			//大小拖拽状态下禁止
+			if (_self.isDrag) {return;} 
+
+			_self.isMove = true;
+
+			e = Util.event.getEvent(event);
+
+			//文本选中触发的事件
+			Util.removeTextSelect();   
+
+			//鼠标移动位置
+			var mouseMovePosition = Util.event.getPageAxis(e);
+
+			//鼠标移动偏移量
+			var offsetX = mouseMovePosition.x - mouseDownPosition.x;
+			var offsetY = mouseMovePosition.y - mouseDownPosition.y;
+
+			//窗口left ，top
+			var left = offsetX + windowPosition.left;
+			var top = offsetY + windowPosition.top;
+
+			//窗口在左边界的判断
+			left = (left < 0) ? 0 : left;   
+			//窗口右边界判断
+			top = (top < 0) ? 0 : top;
+			//窗口右边界判断
+			left = (left > parentSize.width - windowSize.width) ? parentSize.width - windowSize.width : left;
+			//窗口下边界判断
+			top = (top > parentSize.height - windowSize.height) ? parentSize.height - windowSize.height : top;
+
+			//移动窗口
+			_self.moveTo(left,top);
+		}
+
+		//拖动事件解绑
+		function draggableStop(){
+			_self.isMove = false;
+			Util.event.removeHandler(document,'mousemove',draggableBegin);
+			Util.event.removeHandler(document,'mouseup',draggableStop);
 		}
 	},
 
@@ -800,14 +823,14 @@ Windows.prototype = {
 		//窗口拖动
 	    this.windowMove();
 
+		//窗口实例存储
+		this._getInstances();
+
 		//窗口显示掩藏
 		this.show();
 
 		//窗口是否含有页脚
 		this.footerExit();
-
-		//窗口实例存储
-		this._getInstances();
 	}
 }
 
