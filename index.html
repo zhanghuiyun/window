@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<title>窗口</title>
+	<link rel="stylesheet" type="text/css" href="css/index.css">
+</head>
+<body>
+    <!-- 窗口信息 -->
+    <div id="windowDetail">
+    	<ul>
+    		<li>
+    			<label>Input position(x,y)</label>
+    			<input type="text" value="200" id="positionX" />
+    			<input type="text" value="200" id="positionY" />
+                <input type="button" value="sure" id="positionBtn" style="width:100px;"/>
+    		</li>
+    		<li>
+    			<label>Input size(width,height)</label>
+    			<input type="text" value="200" id="sizeX" />
+    			<input type="text" value="200" id="sizeY" />
+                <input type="button" value="sure" id="sizeBtn" style="width:100px;"/>
+    		</li>
+    		<li>
+    			<label>Input Header Text</label>
+    			<input type="text" value="400" style="width:150px;" id="herderText" />
+                <input type="button" value="sure" id="headerBtn" style="width:100px;">
+    		</li>
+    		<li>
+    			<input type="button" value="create a new window" class="btn" onclick="new Window();">
+    		</li>
+    	</ul>
+    </div>
+    <!-- 窗口信息 -->
+
+    <!-- S 窗口 -->
+    <div id="windowMaxMove">
+		<!-- <div class="window">       
+	        <div class="windowHeader">  
+	            <span class="title">WINDOW</span>
+	            <ul>
+	            	<li class="up"></li>
+	            	<li class="extend"></li>
+	            	<li class="close"></li>
+	            </ul>
+	        </div>
+	        <div class="windowContentWrapper">
+	        </div>
+	    </div> -->
+        <!-- <div class="windowWrapper">  
+            <div class="window-container">
+                <div class="window-header">
+                    <span class="title">WINDOW</span>
+                    <ul>
+                        <li class="up"></li>
+                        <li class="extend"></li>
+                        <li class="close"></li>
+                    </ul>
+                </div>
+                <div class="window-content"></div>
+            </div>
+        </div> -->
+    </div>
+    <!-- E 窗口 -->
+	<script type="text/javascript" src="js/index1.js"></script>
+</body>
+</html>
