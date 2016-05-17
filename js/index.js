@@ -46,6 +46,47 @@ function Windows(param){
 Windows.prototype = {
 	constructor : Windows,
 
+	//窗口实例存储
+    _getInstances : function() {
+
+        if(!this.constructor.allInatances) { 
+            this.constructor.allInatances = [];  //若原型中不存在allInatances，将其设置为空数组
+        }
+        this.constructor.allInatances.push(this);   //将window对象放到allInatances中
+
+        //设置窗口Index
+		this._setIndex();
+    },
+
+    // 点击窗口修改层级
+    _setIndex : function() {
+        var _self = this;
+
+        var allInatances = this.constructor.allInatances;          
+
+        Util.event.addHandler(this.windowObj, "mousedown", indexValue);  //窗口点击事件绑定
+
+        //设置zIndex值
+        function indexValue(){    
+        	for(var i = 0, j = allInatances.length; i < j; i++) {
+
+                if(allInatances[i] === _self) {
+                    allInatances.splice(i,1);
+                    allInatances.push(_self);
+                }
+                allInatances[i].windowObj.style.zIndex = _self.options.zIndex + i * 5;
+
+            }
+        }
+    },
+
+    // 将新创建的窗口放置在最前面
+    _windowToFront : function() {
+        var allInatances = this.constructor.allInatances;
+        var windowNum = allInatances ? allInatances.length : 0;
+        this.windowObj.style.zIndex = this.options.zIndex + windowNum * 5;
+    },
+
 	//创建窗口
 	_createWindow : function(){ 
 		var _options = this.options;
@@ -765,6 +806,8 @@ Windows.prototype = {
 		//窗口是否含有页脚
 		this.footerExit();
 
+		//窗口实例存储
+		this._getInstances();
 	}
 }
 
