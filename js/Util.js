@@ -92,6 +92,46 @@ var Util = {
             }
         }
         return result;
+    },
+
+    // 获取指定元素在视口坐标中的尺寸和位置
+    getBoundingClientRect : function(element) {
+
+        var result = {};
+        var box = element.getBoundingClientRect();
+
+        result.left = box.left;
+        result.right = box.right;
+        result.top = box.top;
+        result.bottom = box.bottom;
+
+        //ie8中兼容性处理
+        result.width = box.width === undefined ? (box.right - box.left) : box.width;
+        result.height = box.height === undefined ? (box.bottom - box.top) : box.height;
+
+        return result;
+    },
+
+    //清除文本选中
+    removeTextSelect : function(){
+        if ("getSelection" in window) {
+            window.getSelection().removeAllRanges();
+        }else{
+            document.selection.empty();
+        }                        
+    },
+
+    //鼠标样式类
+    curosrStyle : function(element,preClassName,value,status){
+        if (status) {
+            if (!element.className) {
+                element.className = value;
+            } else {
+                element.className+= " " + value;
+            }
+        }else{
+            element.className = preClassName;
+        }
     }
 
 }
