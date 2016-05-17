@@ -38,6 +38,9 @@ function Windows(param){
 
 	//初始化
 	this.init();
+
+	this.isCollapse = false;
+	this.isMaximize = false;
 }
 
 Windows.prototype = {
@@ -239,6 +242,181 @@ Windows.prototype = {
 		}
 	},
 
+	//窗口操作
+	_windowOperate : function(){
+		var _self = this,
+			_options = this.options;
+
+		//事件代理，最大化，折叠，关闭
+		Util.event.addHandler(this.ul,'click',operate); 
+
+		//双击放大事件绑定
+		Util.event.addHandler(this.windowHeader,'dblclick',dblclick);  
+
+		//双击放大
+		function dblclick(e){ 
+			e = Util.event.getEvent(event);
+			Util.removeTextSelect();
+			var target = Util.event.getTarget(e);
+			if (target !== _self.collapse && target !== _self.maximize && target !== _self.close){
+				//清除文本选中
+				Util.removeTextSelect();
+				//最大化以及还原  
+				_self.beMaximize();        
+			}
+		}
+
+		//窗口操作
+		function operate(e){
+			//获取事件
+			e = Util.event.getEvent(event); 
+			//获取事件目标
+			var target = Util.event.getTarget(e);   
+
+			switch(target){
+				case  _self.collapse :
+					_self.beCollapse();   //折叠
+					break;
+				case  _self.maximize :
+					_self.beMaximize();   //最大化
+					break;
+				case  _self.close :
+					_self.closeWindow();  //关闭
+					break;
+			}
+		}
+	},
+
+	//窗口折叠
+	beCollapse : function(){
+		var _options = this.options,
+		    _self = this,
+		    height = Util.getBoundingClientRect(_self.windowHeader).height; //设置放大后宽高
+
+		//判断是否可以进行折叠
+		if (_options.isCollapse === false) {
+			return;
+		};
+
+		//根据_self.isCollapse的值判断执行折叠或者返回折叠之前的状态
+		_self.isCollapse === false ? collapse() : collapseBack();
+		
+		//折叠
+		function collapse(){ 
+			//保存宽高  
+			_self.preHeight = _options.height;   
+			_self.resizeTo(_options.width,height);
+			//内容部分隐藏   
+			_self.windowContent.style.display = "none";   
+			_self.isCollapse = true; 
+
+			_self.collapse.className = "togglg-collapse";
+		}
+
+		//折叠返回
+		function collapseBack(){
+			//折叠状态边界判断
+			var top = parseInt(_self.windowObj.style.top); 
+			var parentHeight = _options.parent.clientHeight;
+			if (top === parentHeight - height) {
+				top = parentHeight - _self.preHeight;
+				_self.moveTo(_options.left,top);
+			}
+
+			//折叠与最大化切换处理
+			_self.isMaximize === false ? _self.resizeTo(_options.width,_self.preHeight)
+			 							  : _self.resizeTo(_options.width,_options.parent.clientHeight);
+			
+			_self.windowContent.style.display = "block";
+			_self.isCollapse = false;
+			_self.collapse.className = "collapse";
+		}
+	},
+
+	//窗口最大化
+	beMaximize : function(){
+		var _options = this.options,
+		    _self = this;
+
+		//窗口不能最大化
+		if (!_options.isMaximize){return;}
+
+		//根据_self.isMaximize值判断执行最大化还是还原    
+		!_self.isMaximize ? maximize() : maximizeBack();
+
+		//放大
+		function maximize(){   
+			//放大之前的窗口数据
+			_self.preOptions ={  
+				height : _options.height,
+				width : _options.width,
+				left : _options.left,
+				top : _options.top
+			} 
+
+			//折叠状态下放大数据保存
+			if (_self.isCollapse === true) {
+				_self.preOptions.height = _self.preHeight;
+			};
+
+			//父元素大小
+			var parentSize = {
+				height : _options.parent.clientHeight,
+				width : _options.parent.clientWidth
+			}	
+
+			//设置放大后的鼠标样式
+			this.preClassName = _self.windowHeader.className; 
+			_self.windowHeader.style.cursor = "pointer";
+			_self.resizeTo(parentSize.width,parentSize.height);
+			_self.moveTo(0,0);
+
+			//设置操作图标样式
+			_self.collapse.className = "collapse";
+			_self.maximize.className = "togglg-maximize";
+
+			_self.isMaximize = true;
+			_self.windowContent.style.display = "block";
+			_self.isCollapse = false;
+		}
+
+		//返回放大之前的状态
+		function maximizeBack(){   
+			//放大折叠之间宽高处理
+			_self.preHeight =  _self.preOptions.height;
+			_self.resizeTo(_self.preOptions.width,_self.preOptions.height);
+			_self.moveTo(_self.preOptions.left,_self.preOptions.top);
+
+			_self.isMaximize = false;
+			_self.windowContent.style.display = "block";
+			_self.isCollapse = false;
+
+			//设置操作图标样式
+			_self.maximize.className = "maximize";
+			_self.collapse.className = "collapse";
+		}
+	},
+
+	//窗口关闭
+	closeWindow : function(){
+		//将窗口从实例库中移除
+		var allInatances = this.constructor.allInatances;
+        allInatances.pop();
+		this.options.parent.removeChild(this.windowObj);
+	},
+
+	//窗口是否显示
+	show : function(){
+		//窗口显示掩藏
+		this.windowObj.style.display = this.options.isShow ? "block" : "none";
+	},
+
+	//是否含有页脚
+	footerExit : function(){
+		if(!this.options.hasFooter){
+			this.windowContainer.removeChild(this.footer);
+		}
+	},
 
 	//初始化
 	init : function(){
