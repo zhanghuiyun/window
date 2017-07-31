@@ -64,8 +64,11 @@
         		height : parents.clientHeight
         	}
 
-        	// 鼠标按钮的时候
+        	// 窗口拖动操作
         	this.moveOperate()
+
+        	// 窗口拖拽操作
+        	this.dragOperate()
         },
         methods : {
 
